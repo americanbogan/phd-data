@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside the Gig Workforce — CJ Campos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --bg:        #0D1B2A;
+  --surface:   #162030;
+  --surface2:  #1E2D40;
+  --border:    #243447;
+  --text:      #F0F4F8;
+  --muted:     #7A95AE;
+  --signal:    #E4003B;
+  --positive:  #38BDF8;
+  --negative:  #F87171;
+  --neutral:   #64748B;
+  --accent:    #FBBF24;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+/* ─── RESET & BASE ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+::selection { background: var(--signal); color: #fff; }
+
+/* ─── PROGRESS BAR ───────────────────────────────────────── */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px;
+  width: 0%; background: var(--signal);
+  z-index: 1001; transition: width 0.08s linear;
+}
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 3px; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(13,27,42,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+.nav-links {
+  display: flex; gap: 28px; list-style: none;
+}
+.nav-links a {
+  font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+/* ─── SECTION BASE ───────────────────────────────────────── */
+section {
+  padding: 120px 0;
+  position: relative;
+}
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+.container-wide {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ─── CHAPTER BADGE ──────────────────────────────────────── */
+.chapter-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.chapter-badge::before {
+  content: '';
+  display: block; width: 32px; height: 1px;
+  background: var(--signal);
+}
+
+/* ─── TYPOGRAPHY ─────────────────────────────────────────── */
+h1 { font-family: var(--font-head); font-size: clamp(42px,6vw,96px); font-weight: 800; line-height: 0.95; letter-spacing: -0.02em; }
+h2 { font-family: var(--font-head); font-size: clamp(32px,4vw,56px); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 24px; }
+h3 { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+p { color: var(--text); max-width: 640px; margin-bottom: 20px; }
+.lead { font-size: 20px; font-weight: 300; line-height: 1.6; color: var(--text); max-width: 680px; margin-bottom: 32px; }
+.muted { color: var(--muted); font-size: 14px; }
+
+/* ─── REVEAL ANIMATIONS ──────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ─── SO WHAT BOX ────────────────────────────────────────── */
+.so-what {
+  margin-top: 56px;
+  padding: 28px 36px;
+  background: var(--surface);
+  border-left: 3px solid var(--signal);
+  border-radius: 0 6px 6px 0;
+}
+.so-what-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 10px;
+}
+.so-what p { color: var(--text); font-size: 16px; margin: 0; max-width: 680px; }
+
+/* ─── SOURCE TAG ─────────────────────────────────────────── */
+.source-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* ─── DIVIDER ────────────────────────────────────────────── */
+.section-divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 80px 0 60px;
+  position: relative;
+  overflow: hidden;
+}
+#hero-canvas {
+  position: absolute; inset: 0;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px; letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--signal); margin-bottom: 28px;
+}
+.hero-title { margin-bottom: 32px; }
+.hero-title .line-1 { display: block; color: var(--text); }
+.hero-title .line-2 { display: block; color: var(--positive); }
+.hero-subtitle {
+  font-size: 18px; font-weight: 300;
+  color: var(--muted); max-width: 560px;
+  line-height: 1.6; margin-bottom: 48px;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: 40px;
+  flex-wrap: wrap;
+}
+.hero-meta-item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hero-meta-label {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.hero-meta-value {
+  font-family: var(--font-head);
+  font-size: 15px; font-weight: 600; color: var(--text);
+}
+.scroll-hint {
+  position: absolute; bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted);
+  animation: bob 2s ease-in-out infinite;
+}
+.scroll-hint svg { opacity: 0.5; }
+@keyframes bob {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(6px); }
+}
+
+/* ─── S1: PROBLEM ────────────────────────────────────────── */
+#problem { background: var(--bg); }
+.stat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; margin: 56px 0;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.stat-card {
+  background: var(--surface);
+  padding: 40px 36px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.stat-number {
+  font-family: var(--font-head);
+  font-size: clamp(36px,4vw,60px);
+  font-weight: 800;
+  color: var(--signal);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-size: 14px; font-weight: 500;
+  color: var(--text); line-height: 1.4;
+}
+.stat-source { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+.contrast-panel {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; margin-top: 56px;
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  background: var(--border);
+}
+.contrast-col {
+  background: var(--surface); padding: 40px;
+}
+.contrast-col.highlight { background: var(--surface2); }
+.contrast-title {
+  font-family: var(--font-head); font-size: 13px;
+  font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; margin-bottom: 24px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.contrast-title.traditional { color: var(--neutral); }
+.contrast-title.platform    { color: var(--positive); }
+.contrast-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-bottom: 16px; font-size: 15px;
+}
+.contrast-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.contrast-text { color: var(--muted); }
+.contrast-text strong { color: var(--text); }
+
+/* ─── S2: STUDY ──────────────────────────────────────────── */
+#study { background: var(--surface); }
+.study-stats {
+  display: flex; gap: 48px; margin: 48px 0;
+  flex-wrap: wrap;
+}
+.study-stat {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.study-stat-n {
+  font-family: var(--font-head); font-size: 48px;
+  font-weight: 800; color: var(--positive);
+  line-height: 1; letter-spacing: -0.03em;
+}
+.study-stat-label { font-size: 14px; color: var(--muted); }
+
+.chart-section { margin-top: 56px; }
+.chart-title {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 20px;
+}
+.platform-bars { display: flex; flex-direction: column; gap: 14px; margin-bottom: 48px; }
+.platform-bar-row { display: flex; align-items: center; gap: 16px; }
+.platform-bar-label { font-size: 14px; color: var(--text); width: 140px; flex-shrink: 0; }
+.platform-bar-track {
+  flex: 1; height: 32px;
+  background: var(--surface2); border-radius: 4px; overflow: hidden;
+  position: relative;
+}
+.platform-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  width: 0;
+}
+.platform-bar-fill.service  { background: var(--positive); }
+.platform-bar-fill.data     { background: var(--accent); }
+.platform-bar-fill.goods    { background: var(--neutral); }
+.platform-bar-pct {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--muted); width: 48px; text-align: right;
+  flex-shrink: 0;
+}
+#histogram-chart { width: 100%; height: 220px; }
+
+/* ─── S3: FRAMEWORK ──────────────────────────────────────── */
+#framework { background: var(--bg); }
+.framework-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; margin-top: 56px;
+  align-items: start;
+}
+.framework-text .theory-block {
+  margin-bottom: 40px; padding-left: 24px;
+  border-left: 2px solid var(--border);
+  transition: border-color 0.3s;
+}
+.framework-text .theory-block:hover { border-color: var(--positive); }
+.theory-name {
+  font-family: var(--font-head); font-size: 16px;
+  font-weight: 700; color: var(--positive);
+  margin-bottom: 6px;
+}
+.theory-ref {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--muted); margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+.theory-body { font-size: 15px; color: var(--muted); line-height: 1.6; }
+#framework-diagram { width: 100%; }
+
+.choice-box {
+  margin-top: 24px; padding: 20px 24px;
+  background: var(--surface);
+  border-radius: 6px; border: 1px solid var(--border);
+}
+.choice-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.choice-body { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.choice-body strong { color: var(--text); }
+
+/* ─── S4: LITERATURE ─────────────────────────────────────── */
+#literature { background: var(--surface); }
+.lit-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; margin-top: 56px;
+  align-items: start;
+}
+#prisma-chart { width: 100%; }
+.gap-callout {
+  margin-top: 48px;
+  padding: 40px;
+  background: var(--bg);
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.gap-number {
+  font-family: var(--font-head); font-size: 96px;
+  font-weight: 800; color: var(--signal);
+  line-height: 1; letter-spacing: -0.04em;
+}
+.gap-label { font-size: 16px; color: var(--text); margin-top: 12px; line-height: 1.5; }
+.gap-sub { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+.rel-bars { margin-top: 40px; }
+.rel-bar-row { margin-bottom: 20px; }
+.rel-bar-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+.rel-bar-name { font-size: 14px; color: var(--text); }
+.rel-bar-stat {
+  font-family: var(--font-head); font-size: 22px;
+  font-weight: 700; color: var(--positive);
+}
+.rel-bar-track {
+  height: 6px; background: var(--surface2);
+  border-radius: 3px; overflow: hidden;
+}
+.rel-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: var(--positive);
+  transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+  width: 0;
+}
+.rel-note {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--muted); margin-top: 12px; line-height: 1.5;
+}
+
+/* ─── S5: PROFILES ───────────────────────────────────────── */
+#profiles { background: var(--bg); }
+.population-bar {
+  height: 64px; border-radius: 8px;
+  overflow: hidden; display: flex;
+  margin: 48px 0 16px; opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.population-bar.visible { opacity: 1; }
+.pop-segment {
+  display: flex; align-items: center;
+  justify-content: center;
+  font-family: var(--font-head); font-weight: 700;
+  font-size: 14px; color: #fff;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden; white-space: nowrap;
+  width: 0;
+}
+.pop-segment.rich     { background: var(--positive); }
+.pop-segment.balanced { background: #1D8FBB; }
+.pop-segment.limited  { background: #B85C5C; }
+.pop-segment.strained { background: var(--negative); }
+.pop-legend {
+  display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 48px;
+}
+.pop-legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted);
+}
+.pop-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.pop-dot.rich     { background: var(--positive); }
+.pop-dot.balanced { background: #1D8FBB; }
+.pop-dot.limited  { background: #B85C5C; }
+.pop-dot.strained { background: var(--negative); }
+
+#profile-chart { width: 100%; height: 360px; }
+.demands-callout {
+  margin-top: 40px; padding: 28px 36px;
+  background: var(--surface);
+  border-radius: 8px; border: 1px solid var(--border);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+}
+.demands-item {}
+.demands-item-label {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+.demands-item-stat {
+  font-family: var(--font-head); font-size: 28px;
+  font-weight: 800; line-height: 1.1; margin-bottom: 4px;
+}
+.demands-item-stat.neutral { color: var(--neutral); }
+.demands-item-stat.signal  { color: var(--positive); }
+.demands-item-desc { font-size: 14px; color: var(--muted); }
+
+/* ─── S6: PATHWAYS ───────────────────────────────────────── */
+#pathways { background: var(--surface); }
+#sem-container {
+  margin: 56px 0 40px;
+  position: relative;
+}
+#sem-chart {
+  width: 100%; border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.sem-legend {
+  display: flex; gap: 28px; flex-wrap: wrap;
+  margin-top: 16px;
+}
+.sem-legend-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted);
+}
+.sem-legend-line {
+  width: 28px; height: 2px; flex-shrink: 0;
+}
+.sem-legend-line.solid  { background: var(--text); }
+.sem-legend-line.dashed { background: repeating-linear-gradient(90deg,var(--neutral) 0,var(--neutral) 4px,transparent 4px,transparent 8px); }
+.sem-legend-line.hero   { background: var(--signal); }
+
+.rsq-grid {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 12px; margin-top: 48px;
+}
+.rsq-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.rsq-label {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: var(--muted);
+  text-transform: uppercase;
+}
+.rsq-number {
+  font-family: var(--font-head); font-size: 36px;
+  font-weight: 800; line-height: 1; letter-spacing: -0.02em;
+}
+.rsq-bar-track {
+  height: 4px; background: var(--surface2);
+  border-radius: 2px; overflow: hidden;
+}
+.rsq-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 1.4s 0.3s cubic-bezier(0.4,0,0.2,1);
+  width: 0;
+}
+.rsq-note { font-size: 12px; color: var(--muted); }
+
+/* ─── S7: MECHANISM ──────────────────────────────────────── */
+#mechanism { background: var(--bg); }
+.multiples-grid {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 16px; margin: 56px 0;
+}
+.multiple-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 24px;
+}
+.multiple-title {
+  font-family: var(--font-head); font-size: 14px;
+  font-weight: 700; margin-bottom: 4px;
+}
+.multiple-n { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.multiple-coeff {
+  font-family: var(--font-head); font-size: 40px;
+  font-weight: 800; letter-spacing: -0.03em;
+  line-height: 1; margin-bottom: 8px;
+}
+.multiple-path {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--muted); letter-spacing: 0.05em;
+}
+.equivalence-callout {
+  padding: 32px 40px;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.equivalence-number {
+  font-family: var(--font-head); font-size: 80px;
+  font-weight: 800; color: var(--signal);
+  line-height: 1; letter-spacing: -0.04em;
+}
+.equivalence-label { font-size: 18px; color: var(--text); margin-top: 12px; }
+.equivalence-sub   { font-size: 14px; color: var(--muted); margin-top: 8px; max-width: 560px; margin-left: auto; margin-right: auto; }
+
+/* ─── S8: TAKEAWAYS ──────────────────────────────────────── */
+#takeaways {
+  background: var(--surface);
+  padding-bottom: 160px;
+}
+.takeaway-cards {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 2px; margin-top: 56px;
+  background: var(--border); border-radius: 8px;
+  overflow: hidden; border: 1px solid var(--border);
+}
+.takeaway-card {
+  background: var(--bg);
+  padding: 48px 40px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.takeaway-num {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.2em; color: var(--signal);
+}
+.takeaway-headline {
+  font-family: var(--font-head); font-size: 22px;
+  font-weight: 700; line-height: 1.2; color: var(--text);
+}
+.takeaway-stat {
+  font-family: var(--font-head); font-size: 40px;
+  font-weight: 800; color: var(--signal);
+  line-height: 1; letter-spacing: -0.02em;
+}
+.takeaway-body { font-size: 15px; color: var(--muted); line-height: 1.6; }
+.takeaway-implication {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--accent);
+  line-height: 1.5;
+}
+.takeaway-implication::before {
+  content: '→ ';
+  font-weight: 700;
+}
+
+/* ─── REFERENCES ─────────────────────────────────────────── */
+#references {
+  background: var(--bg);
+  padding: 100px 0;
+}
+.ref-list {
+  column-count: 2; column-gap: 48px;
+  margin-top: 48px;
+}
+.ref-item {
+  font-size: 13px; color: var(--muted);
+  line-height: 1.6; margin-bottom: 16px;
+  break-inside: avoid;
+}
+.ref-item strong { color: var(--text); }
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer {
+  background: var(--surface);
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+footer p { font-size: 13px; color: var(--muted); margin: 0; max-width: none; }
+footer a { color: var(--muted); }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  nav .nav-links { display: none; }
+  .container, .container-wide { padding: 0 24px; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .framework-layout, .lit-layout { grid-template-columns: 1fr; }
+  .takeaway-cards { grid-template-columns: 1fr; }
+  .multiples-grid { grid-template-columns: repeat(2,1fr); }
+  .rsq-grid { grid-template-columns: repeat(3,1fr); }
+  .contrast-panel { grid-template-columns: 1fr; }
+  .ref-list { column-count: 1; }
+  .demands-callout { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Gig Workforce Research</div>
+  <ul class="nav-links">
+    <li><a href="#problem">The Problem</a></li>
+    <li><a href="#study">The Study</a></li>
+    <li><a href="#framework">Framework</a></li>
+    <li><a href="#literature">Literature</a></li>
+    <li><a href="#profiles">Profiles</a></li>
+    <li><a href="#pathways">Pathways</a></li>
+    <li><a href="#mechanism">Mechanism</a></li>
+    <li><a href="#takeaways">Takeaways</a></li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════════════════ -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="container hero-content">
+    <p class="hero-kicker reveal">PhD Research — Swinburne University of Technology</p>
+    <h1 class="hero-title reveal reveal-delay-1">
+      <span class="line-1">Inside the</span>
+      <span class="line-2">Gig Workforce</span>
+    </h1>
+    <p class="hero-subtitle reveal reveal-delay-2">
+      What keeps platform workers engaged — and what pushes them toward burnout —
+      when an algorithm manages your work, your income, and your reputation?
+    </p>
+    <div class="hero-meta reveal reveal-delay-3">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Researcher</span>
+        <span class="hero-meta-value">CJ Campos</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Institution</span>
+        <span class="hero-meta-value">Swinburne University of Technology</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Sample</span>
+        <span class="hero-meta-value">1,480 US Platform Workers</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Framework</span>
+        <span class="hero-meta-value">JD-R Model + PsyCap + LGO</span>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+      <path d="M8 0v16M1 9l7 7 7-7" stroke="#8EAAC0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S1: THE PROBLEM ════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <p class="chapter-badge reveal">01 — The Problem</p>
+    <h2 class="reveal reveal-delay-1">The algorithm doesn't care.</h2>
+    <p class="lead reveal reveal-delay-2">
+      Platform work has transformed employment at a global scale. But unlike any
+      previous shift in how people work, it stripped away the organizational
+      scaffolding — the managers, the feedback loops, the career ladders — that
+      traditional employment psychology was built on.
+    </p>
+
+    <div class="stat-grid reveal reveal-delay-3">
+      <div class="stat-card">
+        <div class="stat-number" data-target="540">0</div>
+        <div class="stat-label">million workers globally engaged in platform-based gig work</div>
+        <div class="stat-source">Tara &amp; Iqbal, 2023; World Economic Forum, 2020</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-prefix="$" data-target="2.7" data-suffix="T">$0</div>
+        <div class="stat-label">contributed to the global economy annually by gig workers</div>
+        <div class="stat-source">World Economic Forum, 2020</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" data-target="20" data-suffix="%">0</div>
+        <div class="stat-label">annual growth in demand for remote platform-based work globally</div>
+        <div class="stat-source">Kuhn &amp; Galloway, 2019</div>
+      </div>
+    </div>
+
+    <div class="contrast-panel reveal">
+      <div class="contrast-col">
+        <div class="contrast-title traditional">Traditional Employment</div>
+        <div class="contrast-item">
+          <span class="contrast-icon">👤</span>
+          <span class="contrast-text"><strong>Human manager</strong> provides feedback, support, and accountability</span>
+        </div>
+        <div class="contrast-item">
+          <span class="contrast-icon">📋</span>
+          <span class="contrast-text"><strong>Stable income</strong> with predictable hours and employment protections</span>
+        </div>
+        <div class="contrast-item">
+          <span class="contrast-icon">🏢</span>
+          <span class="contrast-text"><strong>Organizational support</strong> — training, benefits, career development</span>
+        </div>
+        <div class="contrast-item">
+          <span class="contrast-icon">📈</span>
+          <span class="contrast-text"><strong>Clear career pathways</strong> with mentorship and advancement structures</span>
+        </div>
+      </div>
+      <div class="contrast-col highlight">
+        <div class="contrast-title platform">Platform Work</div>
+        <div class="contrast-item">
+          <span class="contrast-icon">🤖</span>
+          <span class="contrast-text"><strong>Algorithmic management</strong> — automated, opaque, impersonal, continuous</span>
+        </div>
+        <div class="contrast-item">
+          <span class="contrast-icon">📉</span>
+          <span class="contrast-text"><strong>Variable income</strong> driven by demand, ratings, and platform rules you can't see</span>
+        </div>
+        <div class="contrast-item">
+          <span class="contrast-icon">🏝️</span>
+          <span class="contrast-text"><strong>Independent contractor status</strong> — no benefits, no protections, no HR department</span>
+        </div>
+        <div class="contrast-item">
+          <span class="contrast-icon">❓</span>
+          <span class="contrast-text"><strong>No career ladder</strong> — advancement is self-directed in an environment not designed for it</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="so-what reveal">
+      <div class="so-what-label">So what</div>
+      <p>Traditional employment psychology assumes a manager, an HR team, and an organizational structure. Platform work strips all of that away and replaces it with an algorithm that workers can't see, can't appeal to, and can't negotiate with. That changes the rules for what keeps someone engaged, healthy, and motivated — and it's precisely why we needed to study this workforce differently.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S2: THE STUDY ══════════════════════ -->
+<section id="study">
+  <div class="container">
+    <p class="chapter-badge reveal">02 — The Study</p>
+    <h2 class="reveal reveal-delay-1">1,480 workers.<br>Real data. No assumptions.</h2>
+    <p class="lead reveal reveal-delay-2">
+      This research surveyed platform workers across the United States — people
+      driving for rideshare apps, completing freelance work, delivering food,
+      and selling goods online. The sample was deliberately broad to reflect the
+      actual diversity of platform work.
+    </p>
+    <p class="reveal reveal-delay-2" style="color:var(--muted); font-size:15px;">
+      <strong style="color:var(--text);">Why a survey?</strong> The Job Demands-Resources model predicts that
+      what matters most is how workers <em>perceive</em> their conditions — not just
+      what those conditions objectively are. Self-reported measures capture that
+      psychological experience directly. Participants completed validated scales
+      measuring job demands, job resources, psychological capital, goal orientation,
+      work engagement, and wellbeing.
+    </p>
+
+    <div class="study-stats reveal reveal-delay-3">
+      <div class="study-stat">
+        <div class="study-stat-n">1,480</div>
+        <div class="study-stat-label">Survey respondents</div>
+      </div>
+      <div class="study-stat">
+        <div class="study-stat-n">26 hrs</div>
+        <div class="study-stat-label">Average per week on platforms</div>
+      </div>
+      <div class="study-stat">
+        <div class="study-stat-n">70%</div>
+        <div class="study-stat-label">Working multiple apps simultaneously</div>
+      </div>
+    </div>
+
+    <div class="chart-section reveal">
+      <div class="chart-title">Platform type — worker distribution</div>
+      <div class="platform-bars">
+        <div class="platform-bar-row">
+          <div class="platform-bar-label">Gig Service Providers</div>
+          <div class="platform-bar-track">
+            <div class="platform-bar-fill service" data-width="82.1"></div>
+          </div>
+          <div class="platform-bar-pct">82.1%</div>
+        </div>
+        <div class="platform-bar-row">
+          <div class="platform-bar-label">Gig Data Providers</div>
+          <div class="platform-bar-track">
+            <div class="platform-bar-fill data" data-width="9.9"></div>
+          </div>
+          <div class="platform-bar-pct">9.9%</div>
+        </div>
+        <div class="platform-bar-row">
+          <div class="platform-bar-label">Gig Goods Providers</div>
+          <div class="platform-bar-track">
+            <div class="platform-bar-fill goods" data-width="8.0"></div>
+          </div>
+          <div class="platform-bar-pct">8.0%</div>
+        </div>
+      </div>
+      <div class="source-tag">Platform taxonomy: Watson et al., 2021 | n=1,215 / n=147 / n=118 respectively</div>
+    </div>
+
+    <div class="chart-section reveal reveal-delay-1">
+      <div class="chart-title">Weekly hours worked — distribution across sample</div>
+      <svg id="histogram-chart"></svg>
+      <div class="source-tag">Campos, 2026 — wave_1_cleaned_data.csv; Avg_Hrs variable (n=1,480)</div>
+    </div>
+
+    <div class="so-what reveal">
+      <div class="so-what-label">So what</div>
+      <p>Seven in ten workers in this sample were running multiple apps at the same time. This isn't a side-hustle story. It's a workforce assembling income wherever they can find it, under conditions they don't control — and doing it for an average of 26 hours a week. Understanding what sustains these workers psychologically isn't a niche academic question. It's an urgent practical one.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S3: FRAMEWORK ══════════════════════ -->
+<section id="framework">
+  <div class="container-wide">
+    <div class="container" style="padding:0;">
+      <p class="chapter-badge reveal">03 — The Framework</p>
+      <h2 class="reveal reveal-delay-1">Three theories. Two resources. One model.</h2>
+      <p class="lead reveal reveal-delay-2">
+        To study this workforce, we needed a framework flexible enough to accommodate
+        work that looks unlike anything organizational psychology had previously studied.
+        That required building on three interlocking theories and focusing on two specific
+        psychological resources that matter most when organizational support is absent.
+      </p>
+    </div>
+
+    <div class="framework-layout reveal">
+      <div class="framework-text">
+        <div class="theory-block">
+          <div class="theory-name">Job Demands–Resources Model (JD-R)</div>
+          <div class="theory-ref">Demerouti et al., 2001 · Bakker &amp; Demerouti, 2007, 2017</div>
+          <div class="theory-body">The base framework. It proposes two pathways: Job Demands drain psychological energy and lead to burnout; Job Resources fuel motivation and drive engagement. Crucially, the JD-R is flexible — it doesn't assume a fixed list of stressors. It was chosen because it can accommodate the unusual structure of platform work, and because it explicitly accommodates personal resources as a third category of influence.</div>
+        </div>
+        <div class="theory-block">
+          <div class="theory-name">Conservation of Resources Theory (COR)</div>
+          <div class="theory-ref">Hobfoll, 1989 · Hobfoll et al., 2018</div>
+          <div class="theory-body">Explains how resources accumulate and deplete. Resources tend to travel in "caravans" — clustering and reinforcing each other. Early resource advantages can compound into gain spirals; early losses can cascade. This matters enormously in gig work, where the absence of organizational support can trigger resource depletion spirals that are hard to reverse.</div>
+        </div>
+        <div class="theory-block">
+          <div class="theory-name">Broaden-and-Build Theory</div>
+          <div class="theory-ref">Fredrickson, 2001</div>
+          <div class="theory-body">Explains why positive psychological states aren't just pleasant — they're functionally useful. Positive emotions broaden cognitive repertoires, making people more creative, more resilient, and better at seeking out resources. This underpins the hypothesis that Psychological Capital (PsyCap) doesn't just help workers feel better; it actively expands their capacity to find and use available support.</div>
+        </div>
+
+        <div class="choice-box">
+          <div class="choice-label">Why Psychological Capital (PsyCap)?</div>
+          <div class="choice-body">PsyCap is a composite of four evidence-based capacities: <strong>self-efficacy</strong> (confidence to act), <strong>hope</strong> (energy and pathways toward goals), <strong>resilience</strong> (recovery after setbacks), and <strong>optimism</strong> (positive outcome expectations). Unlike fixed personality traits, PsyCap is <strong>state-like — it can be developed through targeted interventions</strong> (Luthans et al., 2007). In a work environment with no manager, no team, and no safety net, these four capacities determine whether someone keeps going.</div>
+        </div>
+
+        <div class="choice-box" style="margin-top:12px;">
+          <div class="choice-label">Why Learning Goal Orientation (LGO)?</div>
+          <div class="choice-body">In traditional employment, organizations provide career ladders, training, and mentors. Platform workers have none of that. LGO — the <strong>disposition to treat work challenges as opportunities for growth</strong> rather than performance tests — becomes the personal substitute for organizational development (Dweck &amp; Leggett, 1988). The hypothesis: PsyCap doesn't just directly influence outcomes; it cultivates LGO, which then sustains engagement through a second motivational pathway.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="chart-title" style="margin-bottom:16px;">Conceptual Model — Hypothesized Pathways</div>
+        <svg id="framework-diagram" height="480"></svg>
+        <div class="source-tag" style="margin-top:8px;">Campos, 2026 — Figure 1.1 / Figure 3.1; adapted for display</div>
+
+        <div style="margin-top:24px; padding:20px 24px; background:var(--surface); border-radius:6px; border:1px solid var(--border);">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Reading the model</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);">
+              <svg width="32" height="4"><line x1="0" y1="2" x2="32" y2="2" stroke="#38BDF8" stroke-width="2"/></svg>
+              Hypothesized positive path
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);">
+              <svg width="32" height="4"><line x1="0" y1="2" x2="32" y2="2" stroke="#F87171" stroke-width="2"/></svg>
+              Hypothesized negative path
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);">
+              <svg width="32" height="4"><line x1="0" y1="2" x2="32" y2="2" stroke="#64748B" stroke-width="1.5" stroke-dasharray="4,3"/></svg>
+              Tested but not supported
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="padding:0;">
+      <div class="so-what reveal">
+        <div class="so-what-label">So what</div>
+        <p>This model was built to answer a specific question: when an algorithm manages your work, strips away your organizational support, and makes your income unpredictable, what internal psychological resources determine whether you thrive or burn out? Three theories, two focal resources, and one integrated model that treats that as a testable question — not a philosophical one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S4: LITERATURE ═════════════════════ -->
+<section id="literature">
+  <div class="container">
+    <p class="chapter-badge reveal">04 — Study 1: The Literature</p>
+    <h2 class="reveal reveal-delay-1">What we knew.<br>And the gap hiding in plain sight.</h2>
+    <p class="lead reveal reveal-delay-2">
+      Before a single data point was collected from gig workers, the existing
+      research was systematically mapped. The goal wasn't to summarize what's
+      known — it was to locate the precise gap this research was designed to fill.
+    </p>
+    <p class="reveal reveal-delay-2" style="color:var(--muted);font-size:15px;">
+      <strong style="color:var(--text);">Why start with a systematic review?</strong> This is a sequential research
+      program — each study builds on the last. The review establishes the evidence
+      base, identifies what methods have been used (and which haven't), and makes
+      the case that the gap in platform-based gig work isn't a footnote — it's a
+      structural absence in decades of research. Following PRISMA guidelines
+      (Moher et al., 2015; Page et al., 2021) for transparency and replicability.
+    </p>
+
+    <div class="lit-layout">
+      <div class="reveal">
+        <div class="chart-title">PRISMA Screening Process</div>
+        <svg id="prisma-chart" height="380"></svg>
+        <div class="source-tag">Campos, 2026 — Chapter 5; six academic databases searched</div>
+
+        <div style="margin-top:40px;">
+          <div class="chart-title">PsyCap–Engagement Relationship Types</div>
+          <div class="rel-bars">
+            <div class="rel-bar-row">
+              <div class="rel-bar-header">
+                <span class="rel-bar-name">Indirect (mediation / moderation)</span>
+                <span class="rel-bar-stat">69%</span>
+              </div>
+              <div class="rel-bar-track">
+                <div class="rel-bar-fill" data-width="69" style="background:var(--positive)"></div>
+              </div>
+            </div>
+            <div class="rel-bar-row">
+              <div class="rel-bar-header">
+                <span class="rel-bar-name">Direct relationship</span>
+                <span class="rel-bar-stat">35%</span>
+              </div>
+              <div class="rel-bar-track">
+                <div class="rel-bar-fill" data-width="35" style="background:var(--accent)"></div>
+              </div>
+            </div>
+            <div class="rel-bar-row">
+              <div class="rel-bar-header">
+                <span class="rel-bar-name">Reciprocal / longitudinal</span>
+                <span class="rel-bar-stat">3%</span>
+              </div>
+              <div class="rel-bar-track">
+                <div class="rel-bar-fill" data-width="3" style="background:var(--neutral)"></div>
+              </div>
+            </div>
+            <div class="rel-bar-row">
+              <div class="rel-bar-header">
+                <span class="rel-bar-name">Profile-based (person-centred)</span>
+                <span class="rel-bar-stat">1%</span>
+              </div>
+              <div class="rel-bar-track">
+                <div class="rel-bar-fill" data-width="1" style="background:var(--neutral)"></div>
+              </div>
+            </div>
+            <div class="rel-note">Note: Percentages sum to &gt;100% because some studies appear in multiple categories.<br>Source: Campos, 2026 — Table 5.3 (67 studies total; 23,148 participants; 27 countries; 13 sectors)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal reveal-delay-2">
+        <div class="gap-callout">
+          <div class="gap-number">0</div>
+          <div class="gap-label">of 67 studies examined<br>platform-based gig workers</div>
+          <div class="gap-sub">67 studies. 23,148 participants. 27 countries. 13 industry sectors.<br>Healthcare. Manufacturing. Finance. Education. Technology.<br><br>Not one study had looked at platform-mediated gig work.</div>
+        </div>
+
+        <div style="margin-top:32px; padding:28px 32px; background:var(--bg); border-radius:8px; border:1px solid var(--border);">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">By the numbers</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div>
+              <div style="font-family:var(--font-head);font-size:36px;font-weight:800;color:var(--positive);line-height:1;">67</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px;">studies synthesised</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-head);font-size:36px;font-weight:800;color:var(--positive);line-height:1;">23,148</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px;">total participants</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-head);font-size:36px;font-weight:800;color:var(--positive);line-height:1;">27</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px;">countries represented</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-head);font-size:36px;font-weight:800;color:var(--positive);line-height:1;">1992–2022</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:4px;">publication range</div>
+            </div>
+          </div>
+          <div class="source-tag" style="margin-top:16px;">Campos, 2026 — Section 5.5</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="so-what reveal">
+      <div class="so-what-label">So what</div>
+      <p>The literature confirmed that PsyCap predominantly works <em>through</em> other mechanisms — 69% of studies showed indirect rather than direct effects on engagement. But it also revealed that every one of those studies was conducted in traditional employment settings. The fastest-growing category of non-standard work had never been examined. That gap justified three more studies.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S5: PROFILES ═══════════════════════ -->
+<section id="profiles">
+  <div class="container">
+    <p class="chapter-badge reveal">05 — Study 2: Worker Profiles</p>
+    <h2 class="reveal reveal-delay-1">Four types of gig worker.<br>Same platform. Very different outcomes.</h2>
+    <p class="lead reveal reveal-delay-2">
+      Most workforce research treats everyone the same — it averages across
+      the full sample and reports a single number. Study 2 refused that assumption.
+      Instead, it asked: what distinct psychological configurations actually exist
+      within this workforce?
+    </p>
+    <p class="reveal reveal-delay-2" style="color:var(--muted);font-size:15px;">
+      <strong style="color:var(--text);">Why Latent Class Analysis (LCA)?</strong> LCA lets worker profiles
+      emerge from the data itself, rather than imposing categories on it. It identifies
+      subgroups based on patterns of similarity across multiple psychological
+      variables simultaneously — finding naturally occurring configurations rather
+      than arbitrary cutoffs (Nylund-Gibson &amp; Choi, 2018; Collins &amp; Lanza, 2010).
+      Critically, only one of the 67 studies reviewed in Study 1 had used a
+      person-centred approach. That gap in the literature directly motivated this choice.
+    </p>
+
+    <div class="population-bar reveal" id="pop-bar">
+      <div class="pop-segment rich"   data-target="32.0">32.0%</div>
+      <div class="pop-segment balanced" data-target="38.7">38.7%</div>
+      <div class="pop-segment limited"  data-target="21.5">21.5%</div>
+      <div class="pop-segment strained" data-target="7.8">7.8%</div>
+    </div>
+    <div class="pop-legend reveal">
+      <div class="pop-legend-item"><div class="pop-dot rich"></div> Resource-Rich (32.0%, n=474)</div>
+      <div class="pop-legend-item"><div class="pop-dot balanced"></div> Resource-Balanced (38.7%, n=573)</div>
+      <div class="pop-legend-item"><div class="pop-dot limited"></div> Resource-Limited (21.5%, n=318)</div>
+      <div class="pop-legend-item"><div class="pop-dot strained"></div> Resource-Strained (7.8%, n=116)</div>
+    </div>
+
+    <div class="chart-section reveal">
+      <div class="chart-title">Work engagement &amp; psychological wellbeing by profile — BCH-adjusted standardized means</div>
+      <svg id="profile-chart"></svg>
+      <div class="source-tag">Campos, 2026 — Table 6.25; BCH method (Bolck et al., 2004) used to account for classification uncertainty. All values standardized (z-scores).</div>
+    </div>
+
+    <div class="demands-callout reveal">
+      <div class="demands-item">
+        <div class="demands-item-label">Job Demands across profiles</div>
+        <div class="demands-item-stat neutral">η² = 0.002</div>
+        <div class="demands-item-desc">No significant difference. The algorithm presses everyone equally. <span style="font-family:var(--font-mono);font-size:11px;">p = .350</span></div>
+      </div>
+      <div class="demands-item">
+        <div class="demands-item-label">Job Resources across profiles</div>
+        <div class="demands-item-stat signal">η² = 0.212</div>
+        <div class="demands-item-desc">Large, significant difference. Workers with more PsyCap perceive more resources available to them. <span style="font-family:var(--font-mono);font-size:11px;">p &lt; .001</span></div>
+      </div>
+    </div>
+
+    <div class="so-what reveal">
+      <div class="so-what-label">So what</div>
+      <p>The algorithm does not discriminate — it presses every worker equally hard. What diverges dramatically across profiles is engagement, wellbeing, and perceived access to job resources. That divergence traces back to one thing: how much psychological capital a worker brings to the work. Same platform. Same demands. Profoundly different experience.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S6: PATHWAYS ═══════════════════════ -->
+<section id="pathways">
+  <div class="container">
+    <p class="chapter-badge reveal">06 — Study 3a: The Pathway</p>
+    <h2 class="reveal reveal-delay-1">PsyCap doesn't get you engaged.<br>It gets you <em>well</em> — and wellbeing does the rest.</h2>
+    <p class="lead reveal reveal-delay-2">
+      Knowing that profiles differ is important. But <em>why</em> they differ —
+      the actual psychological mechanism — matters most for anyone who wants to do
+      something about it. Study 3a used Structural Equation Modelling to map
+      the exact pathways from psychological capital to work engagement.
+    </p>
+    <p class="reveal reveal-delay-2" style="color:var(--muted);font-size:15px;">
+      <strong style="color:var(--text);">Why SEM?</strong> The model proposed multiple simultaneous pathways — direct effects
+      and indirect effects operating through different mediators at the same time.
+      SEM tests all of them together, accounting for measurement error, and produces
+      path coefficients showing the relative strength of each route
+      (Anderson &amp; Gerbing, 1988; Kline, 2023). 5,000 bootstrap samples were
+      used to verify indirect effects (Preacher &amp; Hayes, 2008).
+    </p>
+
+    <div id="sem-container" class="reveal">
+      <div class="chart-title">Structural Model — Standardized Path Coefficients</div>
+      <svg id="sem-chart" height="460"></svg>
+      <div class="sem-legend">
+        <div class="sem-legend-item"><div class="sem-legend-line hero"></div> Dominant pathway</div>
+        <div class="sem-legend-item"><div class="sem-legend-line solid"></div> Significant path (p &lt; .05)</div>
+        <div class="sem-legend-item"><div class="sem-legend-line dashed"></div> Non-significant path</div>
+      </div>
+      <div class="source-tag" style="margin-top:12px;">Campos, 2026 — Table 7.5; N=1,480; MLR estimation; 5,000 bootstrap samples</div>
+    </div>
+
+    <div style="margin-top:48px; padding:32px 40px; background:var(--bg); border-radius:8px; border:2px solid var(--signal); position:relative;" class="reveal">
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--signal);margin-bottom:16px;">The dominant pathway</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);">PsyCap</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);">β = 0.724***</div>
+        </div>
+        <div style="font-size:24px;color:var(--signal);">→</div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);">Psychological Wellbeing</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);">β = 0.594***</div>
+        </div>
+        <div style="font-size:24px;color:var(--signal);">→</div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text);">Work Engagement</div>
+        </div>
+        <div style="margin-left:auto; text-align:right;">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:4px;">Total indirect effect</div>
+          <div style="font-family:var(--font-head);font-size:48px;font-weight:800;color:var(--signal);line-height:1;">β = 0.430</div>
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);">95% CI [0.371, 0.481]***</div>
+        </div>
+      </div>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);font-size:14px;color:var(--muted);">
+        Compare this to the <strong style="color:var(--text);">direct</strong> PsyCap → Engagement path: β = 0.096. The indirect route through wellbeing is <strong style="color:var(--signal);">4.5× stronger</strong>. Wellbeing is not downstream of engagement — it is the precondition for it.
+      </div>
+    </div>
+
+    <div style="margin-top:40px; padding:28px 32px; background:var(--bg); border-radius:8px; border:1px solid var(--border);" class="reveal">
+      <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">The asymmetry finding</div>
+      <p style="font-size:16px;color:var(--text);max-width:none;margin-bottom:12px;">PsyCap positively predicted job resource perception (β = 0.639, p &lt; .001). But its effect on job demand perception was effectively zero (β = −0.029, p = .399).</p>
+      <p style="font-size:15px;color:var(--muted);max-width:none;margin:0;"><strong style="color:var(--text);">In plain terms:</strong> PsyCap can change how workers see the support available to them. It cannot change how heavy the algorithm's demands feel. Algorithmically imposed pressures — surge pricing, automated monitoring, performance thresholds — are structurally resistant to psychological reframing.</p>
+    </div>
+
+    <div class="chart-section reveal" style="margin-top:48px;">
+      <div class="chart-title">Variance explained (R²) by variable</div>
+      <div class="rsq-grid">
+        <div class="rsq-card">
+          <div class="rsq-label">Work Engagement</div>
+          <div class="rsq-number" style="color:var(--positive);">72.7%</div>
+          <div class="rsq-bar-track"><div class="rsq-bar-fill" data-width="72.7" style="background:var(--positive);"></div></div>
+          <div class="rsq-note">Of variance explained by the model</div>
+        </div>
+        <div class="rsq-card">
+          <div class="rsq-label">Psych. Wellbeing</div>
+          <div class="rsq-number" style="color:var(--positive);">51.6%</div>
+          <div class="rsq-bar-track"><div class="rsq-bar-fill" data-width="51.6" style="background:var(--positive);"></div></div>
+          <div class="rsq-note">Of variance explained by the model</div>
+        </div>
+        <div class="rsq-card">
+          <div class="rsq-label">Learning Goal Orient.</div>
+          <div class="rsq-number" style="color:var(--accent);">53.6%</div>
+          <div class="rsq-bar-track"><div class="rsq-bar-fill" data-width="53.6" style="background:var(--accent);"></div></div>
+          <div class="rsq-note">Of variance explained by the model</div>
+        </div>
+        <div class="rsq-card">
+          <div class="rsq-label">Job Resources</div>
+          <div class="rsq-number" style="color:var(--accent);">40.8%</div>
+          <div class="rsq-bar-track"><div class="rsq-bar-fill" data-width="40.8" style="background:var(--accent);"></div></div>
+          <div class="rsq-note">Of variance explained by the model</div>
+        </div>
+        <div class="rsq-card">
+          <div class="rsq-label">Job Demands</div>
+          <div class="rsq-number" style="color:var(--neutral);">0.1%</div>
+          <div class="rsq-bar-track"><div class="rsq-bar-fill" data-width="0.1" style="background:var(--neutral);"></div></div>
+          <div class="rsq-note" style="color:var(--negative);">Non-significant (p = .752)</div>
+        </div>
+      </div>
+      <div class="source-tag" style="margin-top:12px;">Campos, 2026 — Table 7.4; N=1,480</div>
+    </div>
+
+    <div class="so-what reveal">
+      <div class="so-what-label">So what</div>
+      <p>The model explained 72.7% of the variance in work engagement — an exceptionally strong result. And the dominant route was through wellbeing, not around it. Wellbeing isn't a downstream perk that engagement produces. It's the psychological fuel that makes engagement possible. But it also confirmed something sobering: PsyCap's reach has a hard limit. It cannot touch the demands the algorithm imposes.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S7: MECHANISM ══════════════════════ -->
+<section id="mechanism">
+  <div class="container">
+    <p class="chapter-badge reveal">07 — Study 3b: The Universal Engine</p>
+    <h2 class="reveal reveal-delay-1">Different outcomes.<br>The same psychological engine.</h2>
+    <p class="lead reveal reveal-delay-2">
+      Study 3a established <em>how</em> the mechanism works. Study 3b asked whether
+      it works the same way for everyone — or whether Resource-Rich workers
+      operate on fundamentally different psychological principles than Resource-Strained ones.
+    </p>
+    <p class="reveal reveal-delay-2" style="color:var(--muted);font-size:15px;">
+      <strong style="color:var(--text);">Why Multi-Group SEM?</strong> Profile membership from Study 2 provided
+      the grouping variable. Multi-group SEM allows simultaneous estimation of the
+      structural model across all four profiles, then formally tests whether any
+      path coefficient differs significantly between groups (Byrne, 2016; Kline, 2023).
+      This is the payoff of the sequential design — each study's output becomes
+      the next study's input. Measurement invariance was tested before group
+      comparisons (Vandenberg &amp; Lance, 2000; Chen, 2007).
+    </p>
+
+    <div class="multiples-grid reveal">
+      <div class="multiple-card">
+        <div class="multiple-title" style="color:var(--positive);">Resource-Rich</div>
+        <div class="multiple-n">n = 474 · 32.0% of sample</div>
+        <div class="multiple-coeff" style="color:var(--positive);">0.489</div>
+        <div class="multiple-path">PWB → Work Engagement</div>
+        <div style="margin-top:16px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:48.9%;background:var(--positive);border-radius:2px;"></div>
+        </div>
+      </div>
+      <div class="multiple-card">
+        <div class="multiple-title" style="color:#38A3CC;">Resource-Balanced</div>
+        <div class="multiple-n">n = 573 · 38.7% of sample</div>
+        <div class="multiple-coeff" style="color:#38A3CC;">0.532</div>
+        <div class="multiple-path">PWB → Work Engagement</div>
+        <div style="margin-top:16px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:53.2%;background:#38A3CC;border-radius:2px;"></div>
+        </div>
+      </div>
+      <div class="multiple-card">
+        <div class="multiple-title" style="color:#C47070;">Resource-Limited</div>
+        <div class="multiple-n">n = 318 · 21.5% of sample</div>
+        <div class="multiple-coeff" style="color:#C47070;">0.554</div>
+        <div class="multiple-path">PWB → Work Engagement</div>
+        <div style="margin-top:16px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:55.4%;background:#C47070;border-radius:2px;"></div>
+        </div>
+      </div>
+      <div class="multiple-card">
+        <div class="multiple-title" style="color:var(--negative);">Resource-Strained</div>
+        <div class="multiple-n">n = 116 · 7.8% of sample</div>
+        <div class="multiple-coeff" style="color:var(--negative);">0.557</div>
+        <div class="multiple-path">PWB → Work Engagement</div>
+        <div style="margin-top:16px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;">
+          <div style="height:100%;width:55.7%;background:var(--negative);border-radius:2px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="equivalence-callout reveal reveal-delay-1">
+      <div class="equivalence-number">0 of 15</div>
+      <div class="equivalence-label">cross-profile pathway differences reached statistical significance</div>
+      <div class="equivalence-sub">Every structural path was tested across all four profiles. The PsyCap → Wellbeing → Engagement mechanism operated with equivalent strength regardless of whether a worker started from a position of resource abundance or resource depletion.</div>
+      <div style="margin-top:16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);">Campos, 2026 — Tables 8.5, 8.7; all differences non-significant (p &gt; .05)</div>
+    </div>
+
+    <div class="so-what reveal" style="margin-top:48px;">
+      <div class="so-what-label">So what</div>
+      <p>This finding reframes the intervention question entirely. If different worker types relied on fundamentally different psychological mechanisms, you would need completely different support strategies for each group. But they don't — they share the same mechanism. The problem isn't mechanism diversity. It's resource inequality. Universal interventions that strengthen the PsyCap → Wellbeing pathway could benefit all workers — but Resource-Strained workers, who start with the least fuel, need them most urgently.</p>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ S8: TAKEAWAYS ══════════════════════ -->
+<section id="takeaways">
+  <div class="container">
+    <p class="chapter-badge reveal">08 — What It Means</p>
+    <h2 class="reveal reveal-delay-1">Three findings that matter<br>beyond the data.</h2>
+    <p class="lead reveal reveal-delay-2">
+      This research was designed to produce insights relevant to multiple
+      stakeholders — workers, platforms, policymakers, and anyone thinking
+      seriously about the psychological sustainability of the gig economy.
+    </p>
+
+    <div class="takeaway-cards reveal reveal-delay-3">
+      <div class="takeaway-card">
+        <div class="takeaway-num">Finding 01</div>
+        <div class="takeaway-headline">Wellbeing is the gateway to engagement — not a bonus</div>
+        <div class="takeaway-stat">β = 0.430</div>
+        <div class="takeaway-body">The dominant route from PsyCap to work engagement ran through psychological wellbeing — an indirect effect nearly five times stronger than the direct path (β = 0.096). Workers who are psychologically depleted cannot simply decide to be more engaged. Wellbeing must come first.</div>
+        <div class="takeaway-implication">Platforms and policymakers that treat worker wellbeing as a downstream outcome have the model backwards. Wellbeing is the precondition — protect it first.</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-num">Finding 02</div>
+        <div class="takeaway-headline">Resilience has real limits — the algorithm sets demands PsyCap cannot rewrite</div>
+        <div class="takeaway-stat">R² = 0.1%</div>
+        <div class="takeaway-body">PsyCap explained essentially zero variance in job demand perception (β = −0.029, non-significant). Workers can strengthen their optimism, hope, and self-belief — and those things genuinely help. But they cannot think their way out of algorithmically-imposed pressures. Individual resilience alone is insufficient.</div>
+        <div class="takeaway-implication">Sustainable gig work requires both psychological support AND structural reform. One without the other is incomplete.</div>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-num">Finding 03</div>
+        <div class="takeaway-headline">Everyone uses the same pathway — but not everyone starts with the same fuel</div>
+        <div class="takeaway-stat">0 of 15</div>
+        <div class="takeaway-body">None of the 15 cross-profile pathway tests reached significance. Resource-Rich and Resource-Strained workers both engage through the PsyCap → Wellbeing → Engagement chain. What differs is how much psychological capital each starts with — and therefore how much output the chain produces.</div>
+        <div class="takeaway-implication">PsyCap is trainable (Luthans et al., 2007). Universal interventions targeting this pathway can benefit all workers — but those with fewest resources need them first.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════ REFERENCES ═════════════════════════ -->
+<section id="references">
+  <div class="container">
+    <p class="chapter-badge">References</p>
+    <h3 style="margin-bottom:8px;">Key Sources</h3>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:32px;">A complete reference list for all citations appearing in this summary. Full reference list available in the submitted thesis.</p>
+    <div class="ref-list">
+      <div class="ref-item"><strong>Anderson, J. C., &amp; Gerbing, D. W. (1988).</strong> Structural equation modeling in practice: A review and recommended two-step approach. <em>Psychological Bulletin, 103</em>(3), 411–423.</div>
+      <div class="ref-item"><strong>Ashford, S. J., Caza, B. B., &amp; Reid, E. M. (2018).</strong> From surviving to thriving in the gig economy: A research agenda for individuals in the new world of work. <em>Research in Organizational Behavior, 38</em>, 23–41.</div>
+      <div class="ref-item"><strong>Bakker, A. B., &amp; Demerouti, E. (2007).</strong> The job demands-resources model: State of the art. <em>Journal of Managerial Psychology, 22</em>(3), 309–328.</div>
+      <div class="ref-item"><strong>Bakker, A. B., &amp; Demerouti, E. (2017).</strong> Job demands–resources theory: Taking stock and looking forward. <em>Journal of Occupational Health Psychology, 22</em>(3), 273–285.</div>
+      <div class="ref-item"><strong>Bolck, A., Croon, M., &amp; Hagenaars, J. (2004).</strong> Estimating latent structure models with categorical variables: One-step versus three-step estimators. <em>Political Analysis, 12</em>(1), 3–27.</div>
+      <div class="ref-item"><strong>Bouckenooghe, D., De Clercq, D., &amp; Raja, U. (2019).</strong> A person-centered, latent profile analysis of psychological capital. <em>Australian Journal of Management, 44</em>(1), 91–108.</div>
+      <div class="ref-item"><strong>Byrne, B. M. (2016).</strong> <em>Structural equation modeling with AMOS</em> (3rd ed.). Routledge.</div>
+      <div class="ref-item"><strong>Campos, C. (2026).</strong> <em>An investigation of the role of personal resources in the Job Demands-Resources model among gig workers in the United States</em> [Doctoral thesis, Swinburne University of Technology].</div>
+      <div class="ref-item"><strong>Chen, F. F. (2007).</strong> Sensitivity of goodness of fit indexes to lack of measurement invariance. <em>Structural Equation Modeling, 14</em>(3), 464–504.</div>
+      <div class="ref-item"><strong>Collins, L. M., &amp; Lanza, S. T. (2010).</strong> <em>Latent class and latent transition analysis</em>. Wiley.</div>
+      <div class="ref-item"><strong>Demerouti, E., Bakker, A. B., Nachreiner, F., &amp; Schaufeli, W. B. (2001).</strong> The job demands-resources model of burnout. <em>Journal of Applied Psychology, 86</em>(3), 499–512.</div>
+      <div class="ref-item"><strong>Duggan, J., Sherman, U., Carbery, R., &amp; McDonnell, A. (2020).</strong> Algorithmic management and app-work in the gig economy. <em>Human Resource Management Journal, 30</em>(1), 114–132.</div>
+      <div class="ref-item"><strong>Dweck, C. S., &amp; Leggett, E. L. (1988).</strong> A social-cognitive approach to motivation and personality. <em>Psychological Review, 95</em>(2), 256–273.</div>
+      <div class="ref-item"><strong>Fernando, M. S. C. L. (2024).</strong> The mediating role of learning goal orientation on psychological capital and performance goal orientation among Gen Zers. <em>Revista de Cercetare şi Intervenţie Socială, 84</em>, 20–36.</div>
+      <div class="ref-item"><strong>Fredrickson, B. L. (2001).</strong> The role of positive emotions in positive psychology: The broaden-and-build theory. <em>American Psychologist, 56</em>(3), 218–226.</div>
+      <div class="ref-item"><strong>Grover, S. L., Teo, S. T. T., Pick, D., Roche, M., &amp; Newton, C. J. (2018).</strong> Psychological capital as a personal resource in the JD-R model. <em>Personnel Review, 47</em>(4), 968–984.</div>
+      <div class="ref-item"><strong>Hobfoll, S. E. (1989).</strong> Conservation of resources: A new attempt at conceptualizing stress. <em>American Psychologist, 44</em>(3), 513–524.</div>
+      <div class="ref-item"><strong>Hobfoll, S. E., Halbesleben, J., Neveu, J. P., &amp; Westman, M. (2018).</strong> Conservation of resources in the organizational context. <em>Annual Review of Organizational Psychology and Organizational Behavior, 5</em>, 103–128.</div>
+      <div class="ref-item"><strong>Kellogg, K. C., Valentine, M. A., &amp; Christin, A. (2020).</strong> Algorithms at work: The new contested terrain of control. <em>Academy of Management Annals, 14</em>(1), 366–410.</div>
+      <div class="ref-item"><strong>Kline, R. B. (2023).</strong> <em>Principles and practice of structural equation modeling</em> (5th ed.). Guilford.</div>
+      <div class="ref-item"><strong>Kuhn, K. M., &amp; Galloway, T. L. (2019).</strong> Expanding perspectives on gig work and gig workers. <em>Journal of Managerial Psychology, 34</em>(4), 186–191.</div>
+      <div class="ref-item"><strong>Luthans, F., Youssef, C. M., &amp; Avolio, B. J. (2007).</strong> <em>Psychological capital: Developing the human competitive edge</em>. Oxford University Press.</div>
+      <div class="ref-item"><strong>Luthans, F., &amp; Youssef-Morgan, C. M. (2017).</strong> Psychological capital: An evidence-based positive approach. <em>Annual Review of Organizational Psychology and Organizational Behavior, 4</em>, 339–366.</div>
+      <div class="ref-item"><strong>Moher, D., Shamseer, L., et al. (2015).</strong> Preferred reporting items for systematic review and meta-analysis protocols (PRISMA-P) 2015 statement. <em>Systematic Reviews, 4</em>(1), 1.</div>
+      <div class="ref-item"><strong>Nylund-Gibson, K., &amp; Choi, A. Y. (2018).</strong> Ten frequently asked questions about latent class analysis. <em>Translational Issues in Psychological Science, 4</em>(4), 440–461.</div>
+      <div class="ref-item"><strong>Page, M. J., McKenzie, J. E., et al. (2021).</strong> The PRISMA 2020 statement: An updated guideline for reporting systematic reviews. <em>BMJ, 372</em>, n71.</div>
+      <div class="ref-item"><strong>Preacher, K. J., &amp; Hayes, A. F. (2008).</strong> Asymptotic and resampling strategies for assessing and comparing indirect effects in multiple mediator models. <em>Behavior Research Methods, 40</em>(3), 879–891.</div>
+      <div class="ref-item"><strong>Rozkwitalska, M., Basinska, B. A., Okumus, F., &amp; Karatepe, O. M. (2022).</strong> The effects of relational and psychological capital on work engagement: The mediation of learning goal orientation. <em>Journal of Organizational Change Management, 35</em>(3), 616–629.</div>
+      <div class="ref-item"><strong>Tara, F., &amp; Iqbal, M. Z. (2023).</strong> Gig economy and psychological capital. <em>International Journal of Academic Research in Business and Social Sciences, 13</em>(4).</div>
+      <div class="ref-item"><strong>Vandenberg, R. J., &amp; Lance, C. E. (2000).</strong> A review and synthesis of the measurement invariance literature. <em>Organizational Research Methods, 3</em>(1), 4–70.</div>
+      <div class="ref-item"><strong>Vandewalle, D. (1997).</strong> Development and validation of a work domain goal orientation instrument. <em>Educational and Psychological Measurement, 57</em>(6), 995–1015.</div>
+      <div class="ref-item"><strong>Watson, G. P., Kistler, L. D., Graham, B. A., &amp; Zuber, R. (2021).</strong> Looking at the gig picture: Defining gig work and explaining profile differences in gig workers' job demands and resources. <em>Group &amp; Organization Management, 46</em>(4), 625–651.</div>
+      <div class="ref-item"><strong>World Economic Forum. (2020).</strong> <em>The future of jobs report 2020</em>. World Economic Forum.</div>
+      <div class="ref-item"><strong>Xanthopoulou, D., Bakker, A. B., Demerouti, E., &amp; Schaufeli, W. B. (2007).</strong> The role of personal resources in the job demands-resources model. <em>International Journal of Stress Management, 14</em>(2), 121–141.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>
+      CJ Campos · PhD Research · Swinburne University of Technology · 2026 ·
+      <a href="#hero">Back to top ↑</a>
+    </p>
+  </div>
+</footer>
+
+<!-- ════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+/* ─── PROGRESS BAR ───────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  const h = document.body.scrollHeight - window.innerHeight;
+  const p = h > 0 ? (window.scrollY / h) * 100 : 0;
+  document.getElementById('progress-bar').style.width = p + '%';
+});
+
+/* ─── HERO CANVAS ────────────────────────────────────────── */
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [];
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  function initNodes() {
+    nodes = [];
+    for (let i = 0; i < 60; i++) {
+      nodes.push({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 2 + 1
+      });
+    }
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // Draw connections
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 140) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(56,189,248,${0.12 * (1 - d/140)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    // Draw nodes
+    nodes.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56,189,248,0.5)';
+      ctx.fill();
+    });
+  }
+  function step() {
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+    });
+    draw();
+    requestAnimationFrame(step);
+  }
+  window.addEventListener('resize', () => { resize(); initNodes(); });
+  resize(); initNodes(); step();
+})();
+
+/* ─── INTERSECTION OBSERVER (REVEAL) ────────────────────── */
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Trigger bar animations when visible
+      e.target.querySelectorAll('.platform-bar-fill').forEach(b => {
+        b.style.width = b.dataset.width + '%';
+      });
+      e.target.querySelectorAll('.rel-bar-fill').forEach(b => {
+        b.style.width = b.dataset.width + '%';
+      });
+      e.target.querySelectorAll('.rsq-bar-fill').forEach(b => {
+        b.style.width = b.dataset.width + '%';
+      });
+    }
+  });
+}, { threshold: 0.15 });
+reveals.forEach(r => observer.observe(r));
+
+/* ─── STAT COUNTERS ──────────────────────────────────────── */
+function animateCounter(el) {
+  const target = parseFloat(el.dataset.target);
+  const prefix = el.dataset.prefix || '';
+  const suffix = el.dataset.suffix || '';
+  const isFloat = target % 1 !== 0;
+  const duration = 1800;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    const val = target * ease;
+    el.textContent = prefix + (isFloat ? val.toFixed(1) : Math.round(val)) + suffix;
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('[data-target]').forEach(animateCounter);
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.stat-grid').forEach(g => counterObs.observe(g));
+
+/* ─── POPULATION BAR ─────────────────────────────────────── */
+const popObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      setTimeout(() => {
+        e.target.querySelectorAll('.pop-segment').forEach(s => {
+          s.style.width = s.dataset.target + '%';
+        });
+      }, 100);
+      popObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+const popBar = document.getElementById('pop-bar');
+if (popBar) popObs.observe(popBar);
+
+/* ─── D3 HISTOGRAM ───────────────────────────────────────── */
+(function() {
+  const data = [
+    { bin: '1–10',  count: 277 },
+    { bin: '11–20', count: 380 },
+    { bin: '21–30', count: 382 },
+    { bin: '31–40', count: 292 },
+    { bin: '41–50', count: 94  },
+    { bin: '51–60', count: 31  },
+    { bin: '61–70', count: 11  },
+    { bin: '71–80', count: 13  },
+  ];
+  const el = document.getElementById('histogram-chart');
+  if (!el) return;
+  const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+  const W = el.parentElement.offsetWidth || 700;
+  const H = 220;
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const svg = d3.select('#histogram-chart')
+    .attr('width', W).attr('height', H)
+    .append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleBand().domain(data.map(d => d.bin)).range([0, w]).padding(0.2);
+  const y = d3.scaleLinear().domain([0, d3.max(data, d => d.count) * 1.1]).range([h, 0]);
+
+  svg.append('g').attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x).tickSize(0))
+    .call(g => g.select('.domain').remove())
+    .selectAll('text').style('fill', '#7A95AE').style('font-size', '12px').style('font-family', 'DM Mono, monospace');
+
+  svg.append('g')
+    .call(d3.axisLeft(y).ticks(4).tickFormat(d => d))
+    .call(g => g.select('.domain').remove())
+    .call(g => g.selectAll('.tick line').attr('stroke', '#243447'))
+    .selectAll('text').style('fill', '#7A95AE').style('font-size', '11px').style('font-family', 'DM Mono, monospace');
+
+  // Grid lines
+  svg.append('g').call(d3.axisLeft(y).ticks(4).tickSize(-w).tickFormat(''))
+    .call(g => g.select('.domain').remove())
+    .call(g => g.selectAll('.tick line').attr('stroke', '#243447').attr('stroke-opacity', 0.5));
+
+  const histObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        svg.selectAll('.hist-bar')
+          .data(data).enter().append('rect')
+          .attr('class', 'hist-bar')
+          .attr('x', d => x(d.bin))
+          .attr('width', x.bandwidth())
+          .attr('y', h).attr('height', 0)
+          .attr('fill', (d, i) => i <= 3 ? '#38BDF8' : '#64748B')
+          .attr('rx', 3)
+          .transition().duration(800).delay((d, i) => i * 60)
+          .attr('y', d => y(d.count))
+          .attr('height', d => h - y(d.count));
+
+        // Value labels on top bars
+        svg.selectAll('.bar-label')
+          .data(data).enter().append('text')
+          .attr('class','bar-label')
+          .attr('x', d => x(d.bin) + x.bandwidth()/2)
+          .attr('y', d => y(d.count) - 6)
+          .attr('text-anchor','middle')
+          .style('fill','#7A95AE')
+          .style('font-size','10px')
+          .style('font-family','DM Mono, monospace')
+          .style('opacity',0)
+          .text(d => d.count)
+          .transition().delay(800).duration(400)
+          .style('opacity',1);
+
+        histObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  histObs.observe(el);
+})();
+
+/* ─── FRAMEWORK DIAGRAM (SVG) ────────────────────────────── */
+(function() {
+  const el = document.getElementById('framework-diagram');
+  if (!el) return;
+  const W = el.parentElement.offsetWidth || 480;
+  const H = 480;
+  const svg = d3.select('#framework-diagram').attr('width', W).attr('height', H);
+
+  // Arrow marker
+  svg.append('defs').append('marker')
+    .attr('id','fw-arrow').attr('viewBox','0 -5 10 10')
+    .attr('refX',8).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6)
+    .attr('orient','auto')
+    .append('path').attr('d','M0,-4L10,0L0,4').attr('fill','#38BDF8');
+
+  svg.append('defs').append('marker')
+    .attr('id','fw-arrow-neg').attr('viewBox','0 -5 10 10')
+    .attr('refX',8).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6)
+    .attr('orient','auto')
+    .append('path').attr('d','M0,-4L10,0L0,4').attr('fill','#F87171');
+
+  // Node positions
+  const nodes = {
+    psycap: { x: W*0.18, y: H*0.5,  label: 'PsyCap',      sub: 'Self-efficacy\nHope · Resilience\nOptimism', color: '#38BDF8' },
+    lgo:    { x: W*0.52, y: H*0.12, label: 'LGO',          sub: 'Learning Goal\nOrientation',                  color: '#FBBF24' },
+    jd:     { x: W*0.52, y: H*0.38, label: 'Job Demands',  sub: 'Quantitative\nEmotional · Insecurity',         color: '#F87171' },
+    jr:     { x: W*0.52, y: H*0.65, label: 'Job Resources', sub: 'Structural\nSocial · Leadership',              color: '#38BDF8' },
+    pwb:    { x: W*0.78, y: H*0.35, label: 'PWB',           sub: 'Psychological\nWellbeing',                      color: '#FBBF24' },
+    we:     { x: W*0.78, y: H*0.72, label: 'Work\nEngagement', sub: 'Vigor · Dedication\nAbsorption',             color: '#38BDF8' },
+  };
+
+  const paths = [
+    { from:'psycap', to:'lgo',  col:'#38BDF8', dash:false, dir:'+' },
+    { from:'psycap', to:'jd',   col:'#64748B', dash:true,  dir:'−' },
+    { from:'psycap', to:'jr',   col:'#38BDF8', dash:false, dir:'+' },
+    { from:'psycap', to:'pwb',  col:'#38BDF8', dash:false, dir:'+', thick:true },
+    { from:'psycap', to:'we',   col:'#38BDF8', dash:false, dir:'+' },
+    { from:'jd',     to:'pwb',  col:'#F87171', dash:false, dir:'−' },
+    { from:'jr',     to:'we',   col:'#38BDF8', dash:false, dir:'+' },
+    { from:'lgo',    to:'we',   col:'#38BDF8', dash:false, dir:'+' },
+    { from:'lgo',    to:'pwb',  col:'#64748B', dash:true,  dir:'+' },
+    { from:'pwb',    to:'we',   col:'#38BDF8', dash:false, dir:'+', thick:true },
+  ];
+
+  function getEdgePoint(n, target) {
+    const rx = 52, ry = 28;
+    const dx = target.x - n.x, dy = target.y - n.y;
+    const d = Math.sqrt(dx*dx+dy*dy);
+    const angle = Math.atan2(dy, dx);
+    // Approximate ellipse boundary
+    const ex = rx * Math.cos(angle);
+    const ey = ry * Math.sin(angle);
+    return { x: n.x + ex, y: n.y + ey };
+  }
+
+  // Draw paths
+  paths.forEach(p => {
+    const from = nodes[p.from], to = nodes[p.to];
+    const s = getEdgePoint(from, to);
+    const e = getEdgePoint(to, from);
+    const mx = (s.x + e.x)/2 + (Math.abs(s.y-e.y) > 80 ? 0 : 20);
+    const my = (s.y + e.y)/2;
+
+    svg.append('path')
+      .attr('d', `M${s.x},${s.y} Q${mx},${my} ${e.x},${e.y}`)
+      .attr('fill','none')
+      .attr('stroke', p.col)
+      .attr('stroke-width', p.thick ? 2.5 : 1.5)
+      .attr('stroke-dasharray', p.dash ? '5,4' : 'none')
+      .attr('marker-end', `url(#fw-arrow${p.col==='#F87171'?'-neg':''})`)
+      .attr('opacity', p.dash ? 0.5 : 0.8);
+
+    // Direction label near midpoint
+    svg.append('text')
+      .attr('x', mx + 4).attr('y', my - 4)
+      .attr('text-anchor','middle')
+      .attr('fill', p.col)
+      .attr('font-size', 10)
+      .attr('font-family','DM Mono, monospace')
+      .attr('opacity', 0.7)
+      .text(p.dir);
+  });
+
+  // Draw nodes
+  Object.values(nodes).forEach(n => {
+    const g = svg.append('g').attr('transform', `translate(${n.x},${n.y})`);
+    g.append('ellipse').attr('rx',52).attr('ry',28)
+      .attr('fill','#162030').attr('stroke',n.color).attr('stroke-width',1.5);
+    const lines = n.label.split('\n');
+    lines.forEach((line, i) => {
+      g.append('text')
+        .attr('text-anchor','middle')
+        .attr('dy', (i - (lines.length-1)/2) * 14 + 1)
+        .attr('fill',n.color)
+        .attr('font-size', 11)
+        .attr('font-family','Syne, sans-serif')
+        .attr('font-weight','700')
+        .text(line);
+    });
+  });
+})();
+
+/* ─── PRISMA FUNNEL ──────────────────────────────────────── */
+(function() {
+  const el = document.getElementById('prisma-chart');
+  if (!el) return;
+  const W = el.parentElement.offsetWidth || 460;
+  const H = 380;
+  const svg = d3.select('#prisma-chart').attr('width', W).attr('height', H);
+  const stages = [
+    { label: 'Initial records identified', n: '5,895', note: '6 databases' },
+    { label: 'After duplicate removal', n: '3,089', note: '2,806 duplicates removed' },
+    { label: 'Full-text eligibility', n: '386', note: '2,703 excluded at screening' },
+    { label: 'Final included studies', n: '67', note: '319 excluded at full text' },
+  ];
+  const bH = 52, gap = 30;
+  const topW = W * 0.85, botW = W * 0.55;
+
+  const prismaObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        stages.forEach((s, i) => {
+          const t = i / (stages.length - 1);
+          const bW = topW + (botW - topW) * t;
+          const bX = (W - bW) / 2;
+          const bY = i * (bH + gap);
+          const col = i === stages.length-1 ? '#E4003B' : '#38BDF8';
+
+          const g = svg.append('g').attr('opacity',0);
+          g.transition().delay(i*180).duration(400).attr('opacity',1);
+
+          g.append('rect')
+            .attr('x', bX).attr('y', bY).attr('width', bW).attr('height', bH)
+            .attr('rx', 4).attr('fill','#1B2B3B').attr('stroke', col).attr('stroke-width', 1);
+
+          g.append('text').attr('x', bX + 16).attr('y', bY + 20)
+            .attr('fill', col).attr('font-size', 18).attr('font-weight', 700)
+            .attr('font-family','Syne, sans-serif').text(s.n);
+
+          g.append('text').attr('x', bX + 16).attr('y', bY + 37)
+            .attr('fill','#F0F4F8').attr('font-size', 11)
+            .attr('font-family','DM Sans, sans-serif').text(s.label);
+
+          // Arrow
+          if (i < stages.length - 1) {
+            const ax = W/2, ay = bY + bH;
+            g.append('line')
+              .attr('x1',ax).attr('y1',ay)
+              .attr('x2',ax).attr('y2',ay+gap-4)
+              .attr('stroke','#243447').attr('stroke-width',1.5)
+              .attr('marker-end','url(#prisma-arrow)');
+
+            // Exclusion note
+            const nextT = (i+1)/(stages.length-1);
+            const nextW = topW + (botW-topW)*nextT;
+            const noteX = (W + nextW)/2 + 8;
+            const noteY = bY + bH + gap/2 + 4;
+            g.append('text').attr('x', noteX).attr('y', noteY)
+              .attr('fill','#64748B').attr('font-size', 10)
+              .attr('font-family','DM Mono, monospace')
+              .text(stages[i+1]?.note || '');
+          }
+        });
+        prismaObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  svg.append('defs').append('marker')
+    .attr('id','prisma-arrow').attr('viewBox','0 -5 10 10')
+    .attr('refX',8).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5)
+    .attr('orient','auto')
+    .append('path').attr('d','M0,-4L10,0L0,4').attr('fill','#243447');
+
+  prismaObs.observe(el);
+})();
+
+/* ─── PROFILE CHART ──────────────────────────────────────── */
+(function() {
+  const el = document.getElementById('profile-chart');
+  if (!el) return;
+  const margin = { top: 20, right: 30, bottom: 50, left: 160 };
+  const W = (el.parentElement.offsetWidth || 900);
+  const H = 360;
+  const w = W - margin.left - margin.right;
+  const h = H - margin.top - margin.bottom;
+
+  const profiles = ['Resource-Rich', 'Resource-Balanced', 'Resource-Limited', 'Resource-Strained'];
+  const profColors = ['#38BDF8','#1D8FBB','#B85C5C','#F87171'];
+  const data = [
+    { profile: 'Resource-Rich',     WE: 0.503, PWB: 0.465 },
+    { profile: 'Resource-Balanced', WE: 0.049, PWB: 0.023 },
+    { profile: 'Resource-Limited',  WE:-0.485, PWB:-0.467 },
+    { profile: 'Resource-Strained', WE:-0.861, PWB:-0.698 },
+  ];
+
+  const svg = d3.select('#profile-chart').attr('width', W).attr('height', H)
+    .append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear().domain([-1.1, 0.65]).range([0, w]);
+  const y = d3.scaleBand().domain(profiles).range([0, h]).padding(0.35);
+
+  // Zero line
+  svg.append('line')
+    .attr('x1', x(0)).attr('y1', 0).attr('x2', x(0)).attr('y2', h)
+    .attr('stroke','#243447').attr('stroke-width',1);
+
+  // Grid
+  svg.append('g').call(d3.axisBottom(x).ticks(5).tickSize(h).tickFormat(d=>d))
+    .call(g => g.select('.domain').remove())
+    .call(g => g.selectAll('.tick line').attr('stroke','#243447').attr('stroke-opacity',0.4))
+    .call(g => g.selectAll('text').attr('y',-h-16).attr('fill','#7A95AE').attr('font-size',11).attr('font-family','DM Mono, monospace'));
+
+  // Y axis labels
+  svg.append('g').call(d3.axisLeft(y).tickSize(0))
+    .call(g => g.select('.domain').remove())
+    .selectAll('text')
+    .attr('fill',(d,i) => profColors[i])
+    .attr('font-size',13).attr('font-weight',600)
+    .attr('font-family','Syne, sans-serif')
+    .attr('x',-12).attr('text-anchor','end');
+
+  const barH = y.bandwidth() * 0.45;
+
+  const profObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        // WE bars (top)
+        data.forEach((d, i) => {
+          const bY = y(d.profile);
+          const col = profColors[i];
+
+          // WE bar
+          svg.append('rect')
+            .attr('x', x(Math.min(0, d.WE))).attr('y', bY)
+            .attr('height', barH).attr('width', 0)
+            .attr('fill', col).attr('rx', 2)
+            .transition().delay(i*100).duration(800).ease(d3.easeCubicOut)
+            .attr('width', Math.abs(x(d.WE) - x(0)));
+
+          // PWB bar (bottom)
+          svg.append('rect')
+            .attr('x', x(Math.min(0, d.PWB))).attr('y', bY + barH + 3)
+            .attr('height', barH).attr('width', 0)
+            .attr('fill', col).attr('opacity', 0.55).attr('rx', 2)
+            .transition().delay(i*100+100).duration(800).ease(d3.easeCubicOut)
+            .attr('width', Math.abs(x(d.PWB) - x(0)));
+
+          // WE label
+          svg.append('text')
+            .attr('x', x(d.WE) + (d.WE >= 0 ? 4 : -4)).attr('y', bY + barH/2 + 4)
+            .attr('text-anchor', d.WE >= 0 ? 'start' : 'end')
+            .attr('fill','#F0F4F8').attr('font-size',11).attr('font-family','DM Mono, monospace')
+            .attr('opacity',0)
+            .text(`WE ${d.WE > 0 ? '+':''}${d.WE}`)
+            .transition().delay(i*100+700).duration(300).attr('opacity',1);
+
+          // PWB label
+          svg.append('text')
+            .attr('x', x(d.PWB) + (d.PWB >= 0 ? 4 : -4)).attr('y', bY + barH + 3 + barH/2 + 4)
+            .attr('text-anchor', d.PWB >= 0 ? 'start' : 'end')
+            .attr('fill','#7A95AE').attr('font-size',11).attr('font-family','DM Mono, monospace')
+            .attr('opacity',0)
+            .text(`PWB ${d.PWB > 0 ? '+':''}${d.PWB}`)
+            .transition().delay(i*100+800).duration(300).attr('opacity',1);
+        });
+
+        // X axis at bottom
+        svg.append('g').attr('transform',`translate(0,${h})`)
+          .call(d3.axisBottom(x).ticks(5))
+          .call(g => g.select('.domain').attr('stroke','#243447'))
+          .call(g => g.selectAll('.tick line').attr('stroke','#243447'))
+          .call(g => g.selectAll('text').attr('fill','#7A95AE').attr('font-size',11).attr('font-family','DM Mono, monospace'));
+
+        // Legend
+        const lg = svg.append('g').attr('transform',`translate(${w-160},${h+30})`);
+        ['Work Engagement','Psych. Wellbeing'].forEach((lbl,i) => {
+          lg.append('rect').attr('x',0).attr('y',i*16).attr('width',10).attr('height',8)
+            .attr('fill','#38BDF8').attr('opacity', i===0 ? 1 : 0.55).attr('rx',1);
+          lg.append('text').attr('x',14).attr('y',i*16+7)
+            .attr('fill','#7A95AE').attr('font-size',11).attr('font-family','DM Sans, sans-serif')
+            .text(lbl);
+        });
+
+        profObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  profObs.observe(el);
+})();
+
+/* ─── SEM DIAGRAM ────────────────────────────────────────── */
+(function() {
+  const el = document.getElementById('sem-chart');
+  if (!el) return;
+  const W = el.parentElement.offsetWidth || 1000;
+  const H = 460;
+  const svg = d3.select('#sem-chart').attr('width', W).attr('height', H);
+
+  // Node positions (scaled to W)
+  const s = W / 1000;
+  const nodes = {
+    psycap: { x: 130*s, y: 230, label: 'PsyCap',            color: '#38BDF8', rx:58, ry:30 },
+    lgo:    { x: 380*s, y: 90,  label: 'LGO',                color: '#FBBF24', rx:52, ry:26 },
+    jd:     { x: 380*s, y: 200, label: 'Job\nDemands',       color: '#F87171', rx:52, ry:26 },
+    jr:     { x: 380*s, y: 330, label: 'Job\nResources',     color: '#38BDF8', rx:58, ry:26 },
+    pwb:    { x: 650*s, y: 155, label: 'PWB',                color: '#FBBF24', rx:52, ry:26 },
+    we:     { x: 870*s, y: 230, label: 'Work\nEngagement',   color: '#38BDF8', rx:68, ry:30 },
+  };
+
+  const paths = [
+    { f:'psycap',to:'lgo',  b:'0.732',  sig:true,  neg:false, col:'#38BDF8', thick:false },
+    { f:'psycap',to:'jd',   b:'−0.029', sig:false, neg:true,  col:'#64748B', thick:false },
+    { f:'psycap',to:'jr',   b:'0.639',  sig:true,  neg:false, col:'#38BDF8', thick:false },
+    { f:'psycap',to:'pwb',  b:'0.724',  sig:true,  neg:false, col:'#E4003B', thick:true  },
+    { f:'psycap',to:'we',   b:'0.096',  sig:true,  neg:false, col:'#38BDF8', thick:false },
+    { f:'jd',    to:'pwb',  b:'−0.052', sig:true,  neg:true,  col:'#F87171', thick:false },
+    { f:'jr',    to:'we',   b:'0.143',  sig:true,  neg:false, col:'#38BDF8', thick:false },
+    { f:'lgo',   to:'we',   b:'0.160',  sig:true,  neg:false, col:'#FBBF24', thick:false },
+    { f:'lgo',   to:'pwb',  b:'−0.013', sig:false, neg:false, col:'#64748B', thick:false },
+    { f:'pwb',   to:'we',   b:'0.594',  sig:true,  neg:false, col:'#E4003B', thick:true  },
+  ];
+
+  // Arrow markers
+  ['#38BDF8','#FBBF24','#F87171','#64748B','#E4003B'].forEach((col,i) => {
+    const id = 'arr'+i;
+    svg.append('defs').append('marker')
+      .attr('id',id).attr('viewBox','0 -5 10 10')
+      .attr('refX',9).attr('refY',0).attr('markerWidth',5).attr('markerHeight',5)
+      .attr('orient','auto')
+      .append('path').attr('d','M0,-4L10,0L0,4').attr('fill',col);
+    col._arrowId = id;
+  });
+  const colToArrow = {'#38BDF8':'arr0','#FBBF24':'arr1','#F87171':'arr2','#64748B':'arr3','#E4003B':'arr4'};
+
+  function edge(n, to) {
+    const dx = to.x - n.x, dy = to.y - n.y;
+    const a = Math.atan2(dy, dx);
+    return { x: n.x + n.rx * Math.cos(a) * 0.95, y: n.y + n.ry * Math.sin(a) * 0.95 };
+  }
+
+  const semObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        // Draw paths
+        paths.forEach((p, i) => {
+          const fn = nodes[p.f], tn = nodes[p.to];
+          const src = edge(fn, tn), dst = edge(tn, fn);
+          const cpx = (src.x + dst.x)/2 + (Math.abs(src.y-dst.y) < 60 ? 0 : (p.f==='psycap' ? 40 : -20));
+          const cpy = (src.y + dst.y)/2;
+
+          const line = svg.append('path')
+            .attr('d',`M${src.x},${src.y}Q${cpx},${cpy} ${dst.x},${dst.y}`)
+            .attr('fill','none').attr('stroke',p.col)
+            .attr('stroke-width', p.thick ? 3.5 : 1.8)
+            .attr('stroke-dasharray', !p.sig ? '5,4' : 'none')
+            .attr('marker-end',`url(#${colToArrow[p.col]})`)
+            .attr('opacity',0);
+
+          line.transition().delay(i*120+200).duration(500).attr('opacity', p.sig ? (p.thick ? 1 : 0.75) : 0.35);
+
+          // Glow on dominant paths
+          if (p.thick) {
+            svg.append('path')
+              .attr('d',`M${src.x},${src.y}Q${cpx},${cpy} ${dst.x},${dst.y}`)
+              .attr('fill','none').attr('stroke',p.col)
+              .attr('stroke-width',8).attr('opacity',0)
+              .attr('filter','url(#glow)')
+              .transition().delay(i*120+200).duration(500).attr('opacity',0.15);
+          }
+
+          // Beta label
+          if (p.sig) {
+            const lx = cpx + (p.f==='psycap'?10:0), ly = cpy - 8;
+            svg.append('text')
+              .attr('x',lx).attr('y',ly)
+              .attr('text-anchor','middle')
+              .attr('fill',p.col).attr('font-size',11)
+              .attr('font-family','DM Mono, monospace')
+              .attr('opacity',0).text(`β=${p.b}${p.sig?'*':''}`)
+              .transition().delay(i*120+600).duration(300).attr('opacity',0.9);
+          }
+        });
+
+        // Glow filter
+        const defs = svg.select('defs');
+        const filter = defs.append('filter').attr('id','glow');
+        filter.append('feGaussianBlur').attr('stdDeviation','4').attr('result','blur');
+        filter.append('feComposite').attr('in','SourceGraphic').attr('in2','blur').attr('operator','over');
+
+        // Nodes
+        Object.values(nodes).forEach((n, i) => {
+          const g = svg.append('g').attr('transform',`translate(${n.x},${n.y})`).attr('opacity',0);
+          g.transition().delay(i*80).duration(400).attr('opacity',1);
+
+          g.append('ellipse').attr('rx',n.rx).attr('ry',n.ry)
+            .attr('fill','#162030').attr('stroke',n.color).attr('stroke-width',2);
+
+          const lines = n.label.split('\n');
+          lines.forEach((line, li) => {
+            g.append('text').attr('text-anchor','middle')
+              .attr('dy', (li-(lines.length-1)/2)*14 + 1)
+              .attr('fill',n.color).attr('font-size',12)
+              .attr('font-family','Syne, sans-serif').attr('font-weight',700)
+              .text(line);
+          });
+        });
+
+        // NS label for jd->psycap
+        const jd = nodes.jd, pc = nodes.psycap;
+        const s2 = edge(pc, jd), e2 = edge(jd, pc);
+        svg.append('text')
+          .attr('x',(s2.x+e2.x)/2+40).attr('y',(s2.y+e2.y)/2)
+          .attr('text-anchor','middle')
+          .attr('fill','#64748B').attr('font-size',10)
+          .attr('font-family','DM Mono, monospace')
+          .attr('opacity',0).text('ns')
+          .transition().delay(1500).duration(400).attr('opacity',0.7);
+
+        semObs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  semObs.observe(el);
+})();
+
+/* ─── HERO REVEAL ────────────────────────────────────────── */
+document.querySelectorAll('.reveal').forEach(el => {
+  if (el.getBoundingClientRect().top < window.innerHeight) {
+    el.classList.add('visible');
+  }
+});
+</script>
+</body>
+</html>
